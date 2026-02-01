@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>LUXORA — Cart</title>
+<link rel="stylesheet" href="styles.css" />
+<style>
+/* ---- Cart Layout ---- */
+.cart-layout {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 48px;
+  padding-top: 32px;
+  align-items: start;
+}
+
+/* ---- Cart Items ---- */
+.cart-items-header {
+  display: grid;
+  grid-template-columns: 80px 1fr 140px 120px 100px 36px;
+  gap: 16px;
+  align-items: center;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--clr-border);
+  margin-bottom: 4px;
+}
+.cart-items-header span {
+  font-size: .7rem;
+  font-weight: 600;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--clr-text-dim);
+}
+.cart-item {
+  display: grid;
+  grid-template-columns: 80px 1fr 140px 120px 100px 36px;
+  gap: 16px;
+  align-items: center;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--clr-border);
+  transition: background var(--transition);
+}
+.cart-item:hover { background: rgba(201,169,110,.02); }
+
+.cart-item__img {
+  width: 80px; height: 80px;
+  background: var(--clr-surface2);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  opacity: .25;
+  border: 1px solid var(--clr-border);
+}
+.cart-item__details .name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.05rem;
+  color: var(--clr-white);
+  margin-bottom: 4px;
+}
+.cart-item__details .meta { font-size: .76rem; color: var(--clr-text-dim); }
+
+/* Qty Control inline */
+.qty-inline { display: flex; align-items: center; gap: 0; }
+.qty-inline button {
+  width: 30px; height: 34px;
+  background: var(--clr-surface2);
+  border: 1px solid var(--clr-border);
+  color: var(--clr-text);
+  font-size: .95rem;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: background var(--transition);
+}
+.qty-inline button:hover { background: var(--clr-surface); }
+.qty-inline button:first-child { border-radius: var(--radius) 0 0 var(--radius); }
+.qty-inline button:last-child  { border-radius: 0 var(--radius) var(--radius) 0; }
+.qty-inline .val {
+  width: 38px; height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--clr-surface);
+  border-top: 1px solid var(--clr-border);
+  border-bottom: 1px solid var(--clr-border);
+  font-size: .84rem;
+  color: var(--clr-text);
+  font-family: 'Inter', sans-serif;
+}
+.cart-item__price { font-size: .9rem; color: var(--clr-accent); font-weight: 500; }
+.cart-item__total { font-size: .9rem; color: var(--clr-white); font-weight: 500; }
+.cart-item__remove {
+  background: none;
+  border: none;
+  color: var(--clr-text-dim);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: color var(--transition);
+  padding: 4px;
+}
+.cart-item__remove:hover { color: var(--clr-danger); }
+
+/* ---- Empty cart message ---- */
+.cart-empty { text-align: center; padding: 80px 0; }
+.cart-empty h3 { color: var(--clr-white); margin-bottom: 10px; }
+
+/* ---- Summary ---- */
+.summary {
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  position: sticky;
+  top: 88px;
+}
+.summary h3 { font-family: 'Inter', sans-serif; font-size: .78rem; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: var(--clr-text); margin-bottom: 24px; }
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  font-size: .84rem;
+}
+.summary-row .label { color: var(--clr-text-dim); }
+.summary-row .value { color: var(--clr-text); }
+.summary-row.total {
+  border-top: 1px solid var(--clr-border);
+  margin-top: 12px;
+  padding-top: 18px;
+}
+.summary-row.total .label { font-weight: 600; color: var(--clr-text); font-size: .88rem; }
+.summary-row.total .value { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 300; color: var(--clr-accent); }
+
+/* ---- Promo Code ---- */
+.promo-form { margin-top: 24px; }
+.promo-form label { font-size: .72rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--clr-text-dim); display: block; margin-bottom: 8px; }
+.promo-row { display: flex; gap: 8px; }
+.promo-row input {
+  flex: 1;
+  padding: 10px 14px;
+  background: var(--clr-surface2);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius);
+  color: var(--clr-text);
+  font-family: 'Inter', sans-serif;
+  font-size: .82rem;
+  outline: none;
+  transition: border-color var(--transition);
+}
+.promo-row input:focus { border-color: var(--clr-accent); }
+.promo-row input::placeholder { color: var(--clr-text-dim); }
+.promo-row button {
+  padding: 10px 16px;
+  background: var(--clr-surface2);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius);
+  color: var(--clr-text);
+  font-family: 'Inter', sans-serif;
+  font-size: .76rem;
+  font-weight: 500;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color var(--transition), background var(--transition);
+}
+.promo-row button:hover { border-color: var(--clr-accent); background: rgba(201,169,110,.07); color: var(--clr-accent); }
+.promo-applied {
+  margin-top: 10px;
+  font-size: .76rem;
+  color: var(--clr-success);
+  display: none;
+  align-items: center;
+  gap: 6px;
+}
+.promo-applied.show { display: flex; }
+
+/* ---- CTA ---- */
+.summary .btn { width: 100%; justify-content: center; margin-top: 22px; }
+.summary .secure-note {
+  text-align: center;
+  font-size: .72rem;
+  color: var(--clr-text-dim);
+  margin-top: 14px;
+}
+
+/* ---- Free shipping banner ---- */
+.shipping-progress {
+  background: var(--clr-surface2);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  margin-top: 20px;
+}
+.shipping-progress p { font-size: .78rem; color: var(--clr-text-dim); margin-bottom: 8px; }
+.shipping-progress p strong { color: var(--clr-success); }
+.progress-bar { height: 4px; background: var(--clr-surface); border-radius: 2px; overflow: hidden; }
+.progress-bar__fill { height: 100%; width: 68%; background: var(--clr-success); border-radius: 2px; transition: width .4s ease; }
+
+@media (max-width: 768px) {
+  .cart-layout { grid-template-columns: 1fr; }
+  .cart-items-header,
+  .cart-item {
+    grid-template-columns: 64px 1fr auto;
+    grid-template-rows: auto auto;
+  }
+  .cart-items-header span:not(:first-child):not(:nth-child(2)) { display: none; }
+  .cart-item__price, .cart-item__total, .cart-item .qty-inline { display: none; }
+  .cart-item__details .meta::after { content: ' · $' attr(data-price); }
+}
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="navbar__inner">
+    <a href="index.html" class="navbar__logo">LUX<span>ORA</span></a>
+    <ul class="navbar__links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="shop.html">Shop</a></li>
+      <li><a href="product.html">Product</a></li>
+      <li><a href="cart.html" class="active">Cart</a></li>
+      <li><a href="checkout.html">Checkout</a></li>
+      <li><a href="contact.html">Contact</a></li>
+      <li><a href="login.html">Account</a></li>
+    </ul>
+    <a href="cart.html" class="navbar__cart">🛒<span class="navbar__cart-count">3</span></a>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="breadcrumb">
+    <a href="index.html">Home</a><span class="sep">›</span>
+    <strong>Cart</strong>
+  </div>
+  <div class="page-hero">
+    <h1>Your Cart</h1>
+    <p>Review your selections before proceeding to checkout.</p>
+  </div>
+
+  <div class="cart-layout">
+    <!-- ============ CART ITEMS ============ -->
+    <div class="cart-items">
+      <div class="cart-items-header">
+        <span></span>
+        <span>Product</span>
+        <span>Options</span>
+        <span>Qty</span>
+        <span style="text-align:right;">Price</span>
+        <span></span>
+      </div>
+
+      <!-- Item 1 -->
+      <div class="cart-item" id="item1">
+        <div class="cart-item__img" style="background:linear-gradient(145deg,#1a1a1a,#222);">⌚</div>
+        <div class="cart-item__details">
+          <div class="name">Chronos Minimal</div>
+          <div class="meta">Silver · 40mm</div>
+        </div>
+        <div class="cart-item__price">$420</div>
+        <div class="qty-inline">
+          <button onclick="cartQty('item1',-1)">−</button>
+          <div class="val" id="item1-qty">1</div>
+          <button onclick="cartQty('item1',1)">+</button>
+        </div>
+        <div class="cart-item__total" id="item1-total">$420</div>
+        <button class="cart-item__remove" onclick="removeItem('item1')">✕</button>
+      </div>
+
+      <!-- Item 2 -->
+      <div class="cart-item" id="item2">
+        <div class="cart-item__img" style="background:linear-gradient(145deg,#1c1810,#252015);">👜</div>
+        <div class="cart-item__details">
+          <div class="name">Heritage Tote</div>
+          <div class="meta">Cognac Leather</div>
+        </div>
+        <div class="cart-item__price">$189</div>
+        <div class="qty-inline">
+          <button onclick="cartQty('item2',-1)">−</button>
+          <div class="val" id="item2-qty">1</div>
+          <button onclick="cartQty('item2',1)">+</button>
+        </div>
+        <div class="cart-item__total" id="item2-total">$189</div>
+        <button class="cart-item__remove" onclick="removeItem('item2')">✕</button>
+      </div>
+
+      <!-- Item 3 -->
+      <div class="cart-item" id="item3">
+        <div class="cart-item__img" style="background:linear-gradient(145deg,#181820,#20202a);">🕶️</div>
+        <div class="cart-item__details">
+          <div class="name">Noir Aviator</div>
+          <div class="meta">Matte Black · Polarised</div>
+        </div>
+        <div class="cart-item__price">$195</div>
+        <div class="qty-inline">
+          <button onclick="cartQty('item3',-1)">−</button>
+          <div class="val" id="item3-qty">1</div>
+          <button onclick="cartQty('item3',1)">+</button>
+        </div>
+        <div class="cart-item__total" id="item3-total">$195</div>
+        <button class="cart-item__remove" onclick="removeItem('item3')">✕</button>
+      </div>
+
+      <!-- Continue shopping link -->
+      <div style="margin-top:24px;">
+        <a href="shop.html" class="btn btn--sm">← Continue Shopping</a>
+      </div>
+    </div>
+
+    <!-- ============ SUMMARY ============ -->
+    <aside class="summary">
+      <h3>Order Summary</h3>
+
+      <div class="summary-row">
+        <span class="label">Subtotal (3 items)</span>
+        <span class="value" id="subtotal">$804</span>
+      </div>
+      <div class="summary-row">
+        <span class="label">Shipping</span>
+        <span class="value" style="color:var(--clr-success);">Free</span>
+      </div>
+      <div class="summary-row">
+        <span class="label">Estimated Tax</span>
+        <span class="value" id="tax">$64.32</span>
+      </div>
+      <div class="summary-row">
+        <span class="label">Discount</span>
+        <span class="value" id="discount" style="color:var(--clr-success);">—</span>
+      </div>
+      <div class="summary-row total">
+        <span class="label">Total</span>
+        <span class="value" id="total">$868.32</span>
+      </div>
+
+      <!-- Promo Code Form -->
+      <div class="promo-form">
+        <label>Promo Code</label>
+        <div class="promo-row">
+          <input type="text" placeholder="e.g. LUXORA20" id="promoInput" />
+          <button onclick="applyPromo()">Apply</button>
+        </div>
+        <div class="promo-applied" id="promoMsg">✓ Code <strong>LUXORA20</strong> applied — 20% off!</div>
+      </div>
+
+      <!-- Shipping Progress -->
+      <div class="shipping-progress">
+        <p>🚚 You qualify for <strong>free shipping</strong>!</p>
+        <div class="progress-bar"><div class="progress-bar__fill"></div></div>
+      </div>
+
+      <!-- CTA -->
+      <a href="checkout.html" class="btn btn--filled">Proceed to Checkout →</a>
+      <p class="secure-note">🔒 Secure checkout · SSL encrypted</p>
+    </aside>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <div class="navbar__logo" style="font-size:1.4rem;">LUX<span style="color:var(--clr-accent)">ORA</span></div>
+        <p>Timeless luxury accessories designed for the modern individual.</p>
+      </div>
+      <div><h5>Shop</h5><ul><li><a href="shop.html">All Products</a></li><li><a href="#">Watches</a></li><li><a href="#">Leather Goods</a></li></ul></div>
+      <div><h5>Company</h5><ul><li><a href="#">About Us</a></li><li><a href="contact.html">Contact</a></li><li><a href="#">Careers</a></li></ul></div>
+      <div><h5>Support</h5><ul><li><a href="#">FAQ</a></li><li><a href="#">Shipping</a></li><li><a href="#">Returns</a></li></ul></div>
+    </div>
+    <div class="footer__bottom"><span>© 2025 Luxora.</span><span>Designed with intention.</span></div>
+  </div>
+</footer>
+
+<div class="toast" id="toast"></div>
+<script>
+// ---- Cart Logic ----
+const prices = { item1: 420, item2: 189, item3: 195 };
+const qtys   = { item1: 1, item2: 1, item3: 1 };
+let promoActive = false;
+
+function cartQty(id, dir) {
+  qtys[id] = Math.max(1, Math.min(10, qtys[id] + dir));
+  document.getElementById(id + '-qty').textContent = qtys[id];
+  document.getElementById(id + '-total').textContent = '$' + (prices[id] * qtys[id]);
+  recalc();
+}
+
+function removeItem(id) {
+  const el = document.getElementById(id);
+  el.style.opacity = '0';
+  el.style.transform = 'translateX(-30px)';
+  el.style.transition = 'all .3s ease';
+  setTimeout(() => { el.remove(); delete prices[id]; delete qtys[id]; recalc(); }, 320);
+  showToast('Item removed from cart.');
+}
+
+function recalc() {
+  let sub = 0, count = 0;
+  Object.keys(prices).forEach(id => { sub += prices[id] * qtys[id]; count += qtys[id]; });
+  const tax = sub * 0.08;
+  const disc = promoActive ? sub * 0.2 : 0;
+  const total = sub + tax - disc;
+  document.getElementById('subtotal').textContent = '$' + sub;
+  document.getElementById('tax').textContent = '$' + tax.toFixed(2);
+  document.getElementById('discount').textContent = disc ? '-$' + disc.toFixed(2) : '—';
+  document.getElementById('discount').style.color = disc ? 'var(--clr-success)' : 'var(--clr-text)';
+  document.getElementById('total').textContent = '$' + total.toFixed(2);
+}
+
+function applyPromo() {
+  const code = document.getElementById('promoInput').value.trim().toUpperCase();
+  if (code === 'LUXORA20') {
+    promoActive = true;
+    document.getElementById('promoMsg').classList.add('show');
+    recalc();
+    showToast('🎉 Promo code applied — 20% off!');
+  } else {
+    showToast('Invalid promo code.');
+  }
+}
+
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);}
+</script>
+</body>
+</html>
