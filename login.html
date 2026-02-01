@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>LUXORA — Account</title>
+<link rel="stylesheet" href="styles.css" />
+<style>
+/* ---- Auth Layout ---- */
+.auth-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: calc(100vh - 69px);
+}
+
+/* ---- Left Panel (decorative) ---- */
+.auth-visual {
+  background: var(--clr-surface);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 60px;
+}
+.auth-visual::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 60% at 30% 40%, rgba(201,169,110,.07) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 50% at 80% 70%, rgba(201,169,110,.04) 0%, transparent 60%);
+}
+.auth-visual__orb {
+  position: absolute;
+  width: 260px; height: 260px;
+  border-radius: 50%;
+  border: 1px solid rgba(201,169,110,.1);
+  top: 15%; left: 10%;
+  animation: orbFloat 9s ease-in-out infinite;
+}
+.auth-visual__orb::after {
+  content: '';
+  position: absolute;
+  inset: 50px;
+  border-radius: 50%;
+  border: 1px solid rgba(201,169,110,.06);
+}
+@keyframes orbFloat {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-14px); }
+}
+.auth-visual__content { position: relative; z-index: 1; }
+.auth-visual__content .logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2.2rem;
+  font-weight: 300;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--clr-white);
+  margin-bottom: 24px;
+}
+.auth-visual__content .logo span { color: var(--clr-accent); }
+.auth-visual__content p { font-size: .88rem; color: var(--clr-text-dim); max-width: 320px; line-height: 1.7; }
+.auth-visual__badges {
+  display: flex;
+  gap: 14px;
+  margin-top: 36px;
+  flex-wrap: wrap;
+}
+.auth-visual__badges .badge { font-size: .68rem; }
+
+/* ---- Right Panel (form) ---- */
+.auth-form-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 40px;
+}
+.auth-form-box {
+  width: 100%;
+  max-width: 400px;
+}
+
+/* ---- Tabs ---- */
+.auth-tabs { display: flex; gap: 0; margin-bottom: 32px; border-bottom: 1px solid var(--clr-border); }
+.auth-tab {
+  flex: 1;
+  padding: 12px 0;
+  text-align: center;
+  font-size: .74rem;
+  font-weight: 600;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--clr-text-dim);
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: 'Inter', sans-serif;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color var(--transition), border-color var(--transition);
+}
+.auth-tab:hover { color: var(--clr-text); }
+.auth-tab.active { color: var(--clr-accent); border-bottom-color: var(--clr-accent); }
+
+/* ---- Panels ---- */
+.auth-panel { display: none; }
+.auth-panel.active { display: block; }
+
+/* ---- Password toggle ---- */
+.input-wrap { position: relative; }
+.input-wrap input { padding-right: 42px; }
+.toggle-pw {
+  position: absolute;
+  right: 14px; top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--clr-text-dim);
+  font-size: .88rem;
+  cursor: pointer;
+  transition: color var(--transition);
+}
+.toggle-pw:hover { color: var(--clr-accent); }
+
+/* ---- Forgot link ---- */
+.forgot-link {
+  display: block;
+  text-align: right;
+  font-size: .74rem;
+  color: var(--clr-accent);
+  margin-top: -14px;
+  margin-bottom: 18px;
+  cursor: pointer;
+  transition: color var(--transition);
+}
+.forgot-link:hover { color: var(--clr-white); }
+
+/* ---- Remember me ---- */
+.remember-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+.remember-row input {
+  width: 16px; height: 16px;
+  accent-color: var(--clr-accent);
+  cursor: pointer;
+}
+.remember-row label { font-size: .78rem; color: var(--clr-text-dim); cursor: pointer; }
+
+/* ---- Divider with text ---- */
+.divider-text {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 24px 0;
+}
+.divider-text::before, .divider-text::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--clr-border);
+}
+.divider-text span { font-size: .7rem; letter-spacing: .16em; text-transform: uppercase; color: var(--clr-text-dim); white-space: nowrap; }
+
+/* ---- Social Buttons ---- */
+.social-btns { display: flex; gap: 10px; }
+.social-btn {
+  flex: 1;
+  padding: 11px 0;
+  background: var(--clr-surface2);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius);
+  color: var(--clr-text-dim);
+  font-family: 'Inter', sans-serif;
+  font-size: .78rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: border-color var(--transition), color var(--transition), background var(--transition);
+}
+.social-btn:hover { border-color: var(--clr-accent-dim); color: var(--clr-text); background: rgba(201,169,110,.05); }
+
+/* ---- Terms note ---- */
+.terms-note {
+  font-size: .72rem;
+  color: var(--clr-text-dim);
+  line-height: 1.6;
+  margin-top: 20px;
+  text-align: center;
+}
+.terms-note a { color: var(--clr-accent); }
+
+/* ---- Full-width btn ---- */
+.auth-panel .btn { width: 100%; justify-content: center; }
+
+@media (max-width: 768px) {
+  .auth-layout { grid-template-columns: 1fr; }
+  .auth-visual { display: none; }
+  .auth-form-panel { padding: 40px 24px; align-items: flex-start; padding-top: 60px; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="navbar__inner">
+    <a href="index.html" class="navbar__logo">LUX<span>ORA</span></a>
+    <ul class="navbar__links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="shop.html">Shop</a></li>
+      <li><a href="product.html">Product</a></li>
+      <li><a href="cart.html">Cart</a></li>
+      <li><a href="checkout.html">Checkout</a></li>
+      <li><a href="contact.html">Contact</a></li>
+      <li><a href="login.html" class="active">Account</a></li>
+    </ul>
+    <a href="cart.html" class="navbar__cart">🛒<span class="navbar__cart-count">3</span></a>
+  </div>
+</nav>
+
+<!-- ============ AUTH LAYOUT ============ -->
+<div class="auth-layout">
+
+  <!-- LEFT: Visual -->
+  <div class="auth-visual">
+    <div class="auth-visual__orb"></div>
+    <div class="auth-visual__content">
+      <div class="logo">LUX<span>ORA</span></div>
+      <p>Join thousands who have elevated their personal style with our curated collection of luxury essentials. Exclusive member perks await.</p>
+      <div class="auth-visual__badges">
+        <span class="badge badge--gold">Free Shipping</span>
+        <span class="badge badge--gold">Early Access</span>
+        <span class="badge badge--gold">Members Only</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Form -->
+  <div class="auth-form-panel">
+    <div class="auth-form-box">
+
+      <!-- Tabs -->
+      <div class="auth-tabs">
+        <button class="auth-tab active" onclick="switchTab('login')">Sign In</button>
+        <button class="auth-tab" onclick="switchTab('register')">Create Account</button>
+      </div>
+
+      <!-- ========== LOGIN PANEL ========== -->
+      <div class="auth-panel active" id="loginPanel">
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" placeholder="you@example.com" id="loginEmail" />
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <div class="input-wrap">
+            <input type="password" placeholder="••••••••" id="loginPass" />
+            <button class="toggle-pw" onclick="togglePw('loginPass', this)">👁</button>
+          </div>
+        </div>
+        <span class="forgot-link" onclick="showToast('Password reset link sent!')">Forgot password?</span>
+        <div class="remember-row">
+          <input type="checkbox" id="rememberMe" />
+          <label for="rememberMe">Remember me</label>
+        </div>
+
+        <button class="btn btn--filled" onclick="handleLogin()">Sign In</button>
+
+        <div class="divider-text"><span>or continue with</span></div>
+
+        <div class="social-btns">
+          <button class="social-btn" onclick="showToast('Redirecting to Google…')">🔵 Google</button>
+          <button class="social-btn" onclick="showToast('Redirecting to Apple…')">⬛ Apple</button>
+        </div>
+
+        <p class="terms-note">
+          Don't have an account? <a href="#" onclick="switchTab('register'); return false;">Create one →</a>
+        </p>
+      </div>
+
+      <!-- ========== REGISTER PANEL ========== -->
+      <div class="auth-panel" id="registerPanel">
+        <div class="form-row">
+          <div class="form-group">
+            <label>First Name</label>
+            <input type="text" placeholder="James" id="regFirst" />
+          </div>
+          <div class="form-group">
+            <label>Last Name</label>
+            <input type="text" placeholder="Carter" id="regLast" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" placeholder="you@example.com" id="regEmail" />
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <div class="input-wrap">
+            <input type="password" placeholder="Create a strong password" id="regPass" oninput="checkPassword()" />
+            <button class="toggle-pw" onclick="togglePw('regPass', this)">👁</button>
+          </div>
+        </div>
+
+        <!-- Password strength -->
+        <div style="margin-top:-14px; margin-bottom:18px;">
+          <div style="display:flex;gap:4px;margin-bottom:6px;" id="strengthBars">
+            <div style="flex:1;height:3px;border-radius:2px;background:var(--clr-border);transition:background .3s;"></div>
+            <div style="flex:1;height:3px;border-radius:2px;background:var(--clr-border);transition:background .3s;"></div>
+            <div style="flex:1;height:3px;border-radius:2px;background:var(--clr-border);transition:background .3s;"></div>
+            <div style="flex:1;height:3px;border-radius:2px;background:var(--clr-border);transition:background .3s;"></div>
+          </div>
+          <span style="font-size:.7rem;color:var(--clr-text-dim);" id="strengthLabel">Enter a password</span>
+        </div>
+
+        <div class="form-group">
+          <label>Confirm Password</label>
+          <div class="input-wrap">
+            <input type="password" placeholder="Re-enter your password" id="regPassConf" />
+            <button class="toggle-pw" onclick="togglePw('regPassConf', this)">👁</button>
+          </div>
+        </div>
+
+        <!-- Newsletter opt-in -->
+        <div class="remember-row" style="margin-top:4px;">
+          <input type="checkbox" id="nlOptIn" checked />
+          <label for="nlOptIn">Subscribe to exclusive offers & new arrivals</label>
+        </div>
+
+        <button class="btn btn--filled" onclick="handleRegister()">Create Account</button>
+
+        <div class="divider-text"><span>or sign up with</span></div>
+
+        <div class="social-btns">
+          <button class="social-btn" onclick="showToast('Redirecting to Google…')">🔵 Google</button>
+          <button class="social-btn" onclick="showToast('Redirecting to Apple…')">⬛ Apple</button>
+        </div>
+
+        <p class="terms-note">
+          By creating an account you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
+          Already have an account? <a href="#" onclick="switchTab('login'); return false;">Sign in →</a>
+        </p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script>
+// ---- Tab Switching ----
+function switchTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.auth-panel').forEach(p => p.classList.remove('active'));
+  if (tab === 'login') {
+    document.querySelectorAll('.auth-tab')[0].classList.add('active');
+    document.getElementById('loginPanel').classList.add('active');
+  } else {
+    document.querySelectorAll('.auth-tab')[1].classList.add('active');
+    document.getElementById('registerPanel').classList.add('active');
+  }
+}
+
+// ---- Password Visibility ----
+function togglePw(id, btn) {
+  const input = document.getElementById(id);
+  if (input.type === 'password') { input.type = 'text'; btn.textContent = '🙈'; }
+  else { input.type = 'password'; btn.textContent = '👁'; }
+}
+
+// ---- Password Strength ----
+function checkPassword() {
+  const pw = document.getElementById('regPass').value;
+  const bars = document.getElementById('strengthBars').children;
+  let score = 0;
+  if (pw.length >= 6) score++;
+  if (pw.length >= 10) score++;
+  if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) score++;
+  if (/[0-9]/.test(pw) && /[^A-Za-z0-9]/.test(pw)) score++;
+
+  const colors = ['#c0504d','#c0504d','#c9a96e','#6aaa6a'];
+  const labels = ['Enter a password','Weak','Fair','Strong','Very Strong'];
+  for (let i = 0; i < 4; i++) {
+    bars[i].style.background = i < score ? colors[Math.min(score - 1, 3)] : 'var(--clr-border)';
+  }
+  document.getElementById('strengthLabel').textContent = labels[score];
+  document.getElementById('strengthLabel').style.color = score >= 3 ? 'var(--clr-success)' : score >= 2 ? 'var(--clr-accent)' : 'var(--clr-danger)';
+}
+
+// ---- Login Handler ----
+function handleLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass  = document.getElementById('loginPass').value;
+  if (!email || !pass) { showToast('Please fill in all fields.'); return; }
+  if (!email.includes('@')) { showToast('Invalid email address.'); return; }
+  showToast('Signing in…');
+  setTimeout(() => { showToast('✓ Welcome back! Redirecting…'); }, 1000);
+}
+
+// ---- Register Handler ----
+function handleRegister() {
+  const first = document.getElementById('regFirst').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const pass  = document.getElementById('regPass').value;
+  const conf  = document.getElementById('regPassConf').value;
+  if (!first || !email || !pass || !conf) { showToast('Please fill in all fields.'); return; }
+  if (!email.includes('@')) { showToast('Invalid email address.'); return; }
+  if (pass.length < 6) { showToast('Password must be at least 6 characters.'); return; }
+  if (pass !== conf) { showToast('Passwords do not match.'); return; }
+  showToast('Creating account…');
+  setTimeout(() => { showToast('🎉 Account created! Welcome to Luxora.'); }, 1100);
+}
+
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);}
+</script>
+</body>
+</html>
