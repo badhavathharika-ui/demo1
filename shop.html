@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>LUXORA — Shop</title>
+<link rel="stylesheet" href="styles.css" />
+<style>
+/* ---- Layout ---- */
+.shop-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 40px;
+  padding-top: 32px;
+}
+
+/* ---- Sidebar Filters ---- */
+.sidebar { position: sticky; top: 88px; align-self: start; max-height: calc(100vh - 110px); overflow-y: auto; }
+.filter-block { margin-bottom: 32px; }
+.filter-block h5 {
+  font-family: 'Inter', sans-serif;
+  font-size: .72rem;
+  font-weight: 600;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--clr-text);
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--clr-border);
+}
+.filter-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  cursor: pointer;
+  font-size: .83rem;
+  color: var(--clr-text-dim);
+  transition: color var(--transition);
+  user-select: none;
+}
+.filter-option:hover { color: var(--clr-text); }
+.filter-option input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px; height: 16px;
+  border: 1px solid var(--clr-border);
+  border-radius: 3px;
+  background: var(--clr-surface2);
+  transition: background var(--transition), border-color var(--transition);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.filter-option input[type="checkbox"]:checked {
+  background: var(--clr-accent);
+  border-color: var(--clr-accent);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2 6l3 3 5-5' stroke='%230e0e0e' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 11px;
+}
+.filter-option .count { margin-left: auto; font-size: .72rem; color: var(--clr-text-dim); opacity: .55; }
+
+/* Price range */
+.price-range { display: flex; gap: 10px; align-items: center; margin-top: 8px; }
+.price-range input {
+  width: 80px;
+  padding: 8px 10px;
+  background: var(--clr-surface2);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius);
+  color: var(--clr-text);
+  font-family: 'Inter', sans-serif;
+  font-size: .82rem;
+  outline: none;
+  transition: border-color var(--transition);
+}
+.price-range input:focus { border-color: var(--clr-accent); }
+.price-range .dash { color: var(--clr-text-dim); }
+
+/* ---- Top Bar ---- */
+.shop-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+.shop-search {
+  position: relative;
+  flex: 1;
+  max-width: 360px;
+}
+.shop-search input {
+  width: 100%;
+  padding: 11px 16px 11px 42px;
+  background: var(--clr-surface2);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius);
+  color: var(--clr-text);
+  font-family: 'Inter', sans-serif;
+  font-size: .86rem;
+  outline: none;
+  transition: border-color var(--transition);
+}
+.shop-search input:focus { border-color: var(--clr-accent); }
+.shop-search input::placeholder { color: var(--clr-text-dim); }
+.shop-search .icon {
+  position: absolute;
+  left: 14px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--clr-text-dim);
+  font-size: .95rem;
+  pointer-events: none;
+}
+.shop-sort {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.shop-sort label { font-size: .74rem; letter-spacing: .1em; text-transform: uppercase; color: var(--clr-text-dim); }
+.shop-sort select {
+  padding: 9px 36px 9px 14px;
+  background: var(--clr-surface2);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius);
+  color: var(--clr-text);
+  font-family: 'Inter', sans-serif;
+  font-size: .82rem;
+  outline: none;
+  appearance: none;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%237a756f'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 9px;
+  transition: border-color var(--transition);
+}
+.shop-sort select:focus { border-color: var(--clr-accent); }
+
+.result-count { font-size: .78rem; color: var(--clr-text-dim); }
+
+/* ---- Products Grid ---- */
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 22px;
+}
+.product-card { cursor: pointer; }
+.product-card__img {
+  aspect-ratio: 3/4;
+  background: var(--clr-surface2);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--transition);
+}
+.product-card:hover .product-card__img { transform: scale(1.02); }
+.product-card__img .placeholder-icon { font-size: 2rem; opacity: .18; }
+.product-card__img .product-badge { position: absolute; top: 12px; left: 12px; }
+/* Quick-add button */
+.product-card__quick {
+  position: absolute;
+  bottom: 14px; left: 50%; transform: translateX(-50%);
+  background: rgba(14,14,14,.85);
+  border: 1px solid var(--clr-accent);
+  color: var(--clr-accent);
+  font-family: 'Inter', sans-serif;
+  font-size: .72rem;
+  font-weight: 500;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  padding: 9px 20px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--transition), background var(--transition);
+  white-space: nowrap;
+}
+.product-card:hover .product-card__quick { opacity: 1; }
+.product-card__quick:hover { background: var(--clr-accent); color: var(--clr-bg); }
+
+.product-card__body { padding: 16px; }
+.product-card__name { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-weight: 400; color: var(--clr-white); }
+.product-card__price { font-size: .86rem; color: var(--clr-accent); margin-top: 3px; }
+.product-card__price .old { text-decoration: line-through; color: var(--clr-text-dim); margin-right: 6px; font-size: .76rem; }
+.product-card__rating { font-size: .73rem; color: var(--clr-text-dim); margin-top: 5px; }
+.product-card__rating .stars { color: var(--clr-accent); letter-spacing: 1px; }
+
+/* ---- Pagination ---- */
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 48px;
+  flex-wrap: wrap;
+}
+.page-btn {
+  width: 38px; height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius);
+  background: var(--clr-surface);
+  color: var(--clr-text-dim);
+  font-family: 'Inter', sans-serif;
+  font-size: .82rem;
+  cursor: pointer;
+  transition: border-color var(--transition), color var(--transition), background var(--transition);
+}
+.page-btn:hover { border-color: var(--clr-accent); color: var(--clr-accent); }
+.page-btn.active { background: var(--clr-accent); border-color: var(--clr-accent); color: var(--clr-bg); font-weight: 600; }
+
+@media (max-width: 768px) {
+  .shop-layout { grid-template-columns: 1fr; }
+  .sidebar { position: static; max-height: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="navbar__inner">
+    <a href="index.html" class="navbar__logo">LUX<span>ORA</span></a>
+    <ul class="navbar__links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="shop.html" class="active">Shop</a></li>
+      <li><a href="product.html">Product</a></li>
+      <li><a href="cart.html">Cart</a></li>
+      <li><a href="checkout.html">Checkout</a></li>
+      <li><a href="contact.html">Contact</a></li>
+      <li><a href="login.html">Account</a></li>
+    </ul>
+    <a href="cart.html" class="navbar__cart">🛒<span class="navbar__cart-count">3</span></a>
+  </div>
+</nav>
+
+<div class="container">
+  <!-- Breadcrumb -->
+  <div class="breadcrumb">
+    <a href="index.html">Home</a><span class="sep">›</span>
+    <strong>Shop</strong>
+  </div>
+
+  <!-- Page Hero -->
+  <div class="page-hero">
+    <h1>Shop</h1>
+    <p>Discover timeless pieces from our curated collection of luxury accessories.</p>
+  </div>
+
+  <!-- Shop Layout -->
+  <div class="shop-layout">
+
+    <!-- ============ SIDEBAR ============ -->
+    <aside class="sidebar">
+      <!-- Category -->
+      <div class="filter-block">
+        <h5>Category</h5>
+        <label class="filter-option"><input type="checkbox" checked /> Watches <span class="count">24</span></label>
+        <label class="filter-option"><input type="checkbox" /> Leather Goods <span class="count">18</span></label>
+        <label class="filter-option"><input type="checkbox" /> Accessories <span class="count">32</span></label>
+        <label class="filter-option"><input type="checkbox" /> Footwear <span class="count">15</span></label>
+        <label class="filter-option"><input type="checkbox" /> Eyewear <span class="count">11</span></label>
+      </div>
+
+      <!-- Brand -->
+      <div class="filter-block">
+        <h5>Brand</h5>
+        <label class="filter-option"><input type="checkbox" /> Luxora House <span class="count">40</span></label>
+        <label class="filter-option"><input type="checkbox" /> Atelier & Co <span class="count">22</span></label>
+        <label class="filter-option"><input type="checkbox" /> Maison Noir <span class="count">17</span></label>
+        <label class="filter-option"><input type="checkbox" /> Carven Legacy <span class="count">9</span></label>
+      </div>
+
+      <!-- Price Range -->
+      <div class="filter-block">
+        <h5>Price Range</h5>
+        <div class="price-range">
+          <input type="number" placeholder="$0" id="priceMin" />
+          <span class="dash">—</span>
+          <input type="number" placeholder="$999" id="priceMax" />
+        </div>
+      </div>
+
+      <!-- Rating -->
+      <div class="filter-block">
+        <h5>Rating</h5>
+        <label class="filter-option"><input type="checkbox" /> ★★★★★ &nbsp;(5) <span class="count">58</span></label>
+        <label class="filter-option"><input type="checkbox" checked /> ★★★★☆ &nbsp;(4+) <span class="count">91</span></label>
+        <label class="filter-option"><input type="checkbox" /> ★★★☆☆ &nbsp;(3+) <span class="count">24</span></label>
+      </div>
+
+      <!-- Apply -->
+      <button class="btn btn--filled btn--sm" onclick="showToast('Filters applied.')">Apply Filters</button>
+    </aside>
+
+    <!-- ============ MAIN CONTENT ============ -->
+    <main>
+      <!-- Top Bar -->
+      <div class="shop-topbar">
+        <div class="shop-search">
+          <span class="icon">🔍</span>
+          <input type="text" placeholder="Search products…" id="searchInput" />
+        </div>
+        <div class="shop-sort">
+          <label>Sort by</label>
+          <select>
+            <option>Featured</option>
+            <option>Price: Low → High</option>
+            <option>Price: High → Low</option>
+            <option>Newest First</option>
+            <option>Most Popular</option>
+          </select>
+        </div>
+      </div>
+      <p class="result-count">Showing <strong>24</strong> products</p>
+
+      <!-- Products -->
+      <div class="products-grid">
+        <!-- 1 -->
+        <div class="card product-card">
+          <div class="product-card__img" style="background:linear-gradient(145deg,#1a1a1a,#222);">
+            <span class="placeholder-icon">⌚</span>
+            <span class="badge badge--gold product-badge">New</span>
+            <button class="product-card__quick" onclick="showToast('Added to cart!')">+ Add to Cart</button>
+          </div>
+          <div class="product-card__body">
+            <div class="product-card__name">Chronos Minimal</div>
+            <div class="product-card__price">$420</div>
+            <div class="product-card__rating"><span class="stars">★★★★★</span> 148</div>
+          </div>
+        </div>
+        <!-- 2 -->
+        <div class="card product-card">
+          <div class="product-card__img" style="background:linear-gradient(145deg,#1c1810,#252015);">
+            <span class="placeholder-icon">👜</span>
+            <span class="badge badge--red product-badge">Sale</span>
+            <button class="product-card__quick" onclick="showToast('Added to cart!')">+ Add to Cart</button>
+          </div>
+          <div class="product-card__body">
+            <div class="product-card__name">Heritage Tote</div>
+            <div class="product-card__price"><span class="old">$280</span>$189</div>
+            <div class="product-card__rating"><span class="stars">★★★★☆</span> 93</div>
+          </div>
+        </div>
+        <!-- 3 -->
+        <div class="card product-card">
+          <div class="product-card__img" style="background:linear-gradient(145deg,#181820,#20202a);">
+            <span class="placeholder-icon">🕶️</span>
+            <button class="product-card__quick" onclick="showToast('Added to cart!')">+ Add to Cart</button>
+          </div>
+          <div class="product-card__body">
+            <div class="product-card__name">Noir Aviator</div>
+            <div class="product-card__price">$195</div>
+            <div class="product-card__rating"><span class="stars">★★★★★</span> 211</div>
+          </div>
+        </div>
+        <!-- 4 -->
+        <div class="card product-card">
+          <div class="product-card__img" style="background:linear-gradient(145deg,#1a1815,#242018);">
+            <span class="placeholder-icon">👞</span>
+            <span class="badge badge--green product-badge">Best Seller</span>
+            <button class="product-card__quick" onclick="showToast('Added to cart!')">+ Add to Cart</button>
+          </div>
+          <div class="product-card__body">
+            <div class="product-card__name">Oxford Classic</div>
+            <div class="product-card__price">$340</div>
+            <div class="product-card__rating"><span class="stars">★★★★☆</span> 87</div>
+          </div>
+        </div>
+        <!-- 5 -->
+        <div class="card product-card">
+          <div class="product-card__img" style="background:linear-gradient(145deg,#1e1a1a,#2a2020);">
+            <span class="placeholder-icon">👛</span>
+            <button class="product-card__quick" onclick="showToast('Added to cart!')">+ Add to Cart</button>
+          </div>
+          <div class="product-card__body">
+            <div class="product-card__name">Fold Wallet</div>
+            <div class="product-card__price">$95</div>
+            <div class="product-card__rating"><span class="stars">★★★★☆</span> 64</div>
+          </div>
+        </div>
+        <!-- 6 -->
+        <div class="card product-card">
+          <div class="product-card__img" style="background:linear-gradient(145deg,#1a1a20,#22222c);">
+            <span class="placeholder-icon">⌚</span>
+            <span class="badge badge--red product-badge">-30%</span>
+            <button class="product-card__quick" onclick="showToast('Added to cart!')">+ Add to Cart</button>
+          </div>
+          <div class="product-card__body">
+            <div class="product-card__name">Dusk Tourbillon</div>
+            <div class="product-card__price"><span class="old">$780</span>$546</div>
+            <div class="product-card__rating"><span class="stars">★★★★★</span> 302</div>
+          </div>
+        </div>
+        <!-- 7 -->
+        <div class="card product-card">
+          <div class="product-card__img" style="background:linear-gradient(145deg,#1c1818,#282020);">
+            <span class="placeholder-icon">🧥</span>
+            <button class="product-card__quick" onclick="showToast('Added to cart!')">+ Add to Cart</button>
+          </div>
+          <div class="product-card__body">
+            <div class="product-card__name">Overcoat Wool</div>
+            <div class="product-card__price">$620</div>
+            <div class="product-card__rating"><span class="stars">★★★★☆</span> 41</div>
+          </div>
+        </div>
+        <!-- 8 -->
+        <div class="card product-card">
+          <div class="product-card__img" style="background:linear-gradient(145deg,#181c1a,#202a24);">
+            <span class="placeholder-icon">🧣</span>
+            <span class="badge badge--gold product-badge">New</span>
+            <button class="product-card__quick" onclick="showToast('Added to cart!')">+ Add to Cart</button>
+          </div>
+          <div class="product-card__body">
+            <div class="product-card__name">Silk Scarf</div>
+            <div class="product-card__price">$110</div>
+            <div class="product-card__rating"><span class="stars">★★★★★</span> 76</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination">
+        <button class="page-btn">←</button>
+        <button class="page-btn active">1</button>
+        <button class="page-btn">2</button>
+        <button class="page-btn">3</button>
+        <button class="page-btn">→</button>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <div class="navbar__logo" style="font-size:1.4rem;">LUX<span style="color:var(--clr-accent)">ORA</span></div>
+        <p>Timeless luxury accessories designed for the modern individual.</p>
+      </div>
+      <div><h5>Shop</h5><ul><li><a href="shop.html">All Products</a></li><li><a href="#">Watches</a></li><li><a href="#">Leather Goods</a></li></ul></div>
+      <div><h5>Company</h5><ul><li><a href="#">About Us</a></li><li><a href="contact.html">Contact</a></li><li><a href="#">Careers</a></li></ul></div>
+      <div><h5>Support</h5><ul><li><a href="#">FAQ</a></li><li><a href="#">Shipping</a></li><li><a href="#">Returns</a></li></ul></div>
+    </div>
+    <div class="footer__bottom"><span>© 2025 Luxora.</span><span>Designed with intention.</span></div>
+  </div>
+</footer>
+
+<div class="toast" id="toast"></div>
+<script>
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);}
+document.querySelectorAll('.page-btn').forEach(b=>{b.addEventListener('click',()=>{document.querySelectorAll('.page-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');});});
+</script>
+</body>
+</html>
