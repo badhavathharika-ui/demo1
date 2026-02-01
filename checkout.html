@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>LUXORA — Checkout</title>
+<link rel="stylesheet" href="styles.css" />
+<style>
+/* ---- Checkout Layout ---- */
+.checkout-layout {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 48px;
+  padding-top: 32px;
+  align-items: start;
+}
+
+/* ---- Step Progress ---- */
+.steps {
+  display: flex;
+  gap: 0;
+  margin-bottom: 36px;
+  position: relative;
+}
+.steps::before {
+  content: '';
+  position: absolute;
+  top: 16px; left: 10%; right: 10%;
+  height: 1px;
+  background: var(--clr-border);
+  z-index: 0;
+}
+.step {
+  flex: 1;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+.step__dot {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--clr-surface2);
+  border: 2px solid var(--clr-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  font-size: .75rem;
+  color: var(--clr-text-dim);
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  transition: background var(--transition), border-color var(--transition), color var(--transition);
+}
+.step.active .step__dot {
+  background: var(--clr-accent);
+  border-color: var(--clr-accent);
+  color: var(--clr-bg);
+}
+.step.done .step__dot {
+  background: var(--clr-success);
+  border-color: var(--clr-success);
+  color: #fff;
+}
+.step__label { font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; color: var(--clr-text-dim); margin-top: 8px; font-family: 'Inter', sans-serif; }
+.step.active .step__label { color: var(--clr-accent); }
+
+/* ---- Step Panels ---- */
+.step-panel { display: none; }
+.step-panel.active { display: block; }
+
+.step-panel h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.4rem;
+  font-weight: 300;
+  color: var(--clr-white);
+  margin-bottom: 6px;
+}
+.step-panel > p { font-size: .8rem; margin-bottom: 24px; }
+
+/* ---- Navigation Buttons ---- */
+.step-nav { display: flex; gap: 12px; margin-top: 28px; }
+.step-nav .btn { flex: 1; justify-content: center; }
+
+/* ---- Card number mask ---- */
+.card-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+/* ---- Order Review (sidebar) ---- */
+.order-review {
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  position: sticky;
+  top: 88px;
+}
+.order-review h4 {
+  font-family: 'Inter', sans-serif;
+  font-size: .74rem;
+  font-weight: 600;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--clr-text);
+  margin-bottom: 20px;
+}
+.review-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--clr-border);
+}
+.review-item:last-of-type { border-bottom: none; }
+.review-item__img {
+  width: 48px; height: 48px;
+  background: var(--clr-surface2);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  opacity: .25;
+  flex-shrink: 0;
+}
+.review-item__info { flex: 1; }
+.review-item__info .name { font-size: .82rem; color: var(--clr-white); }
+.review-item__info .meta { font-size: .72rem; color: var(--clr-text-dim); margin-top: 2px; }
+.review-item__price { font-size: .84rem; color: var(--clr-accent); font-weight: 500; }
+
+.review-totals { margin-top: 18px; }
+.review-totals .row {
+  display: flex;
+  justify-content: space-between;
+  padding: 7px 0;
+  font-size: .8rem;
+}
+.review-totals .row .l { color: var(--clr-text-dim); }
+.review-totals .row .v { color: var(--clr-text); }
+.review-totals .row.total {
+  border-top: 1px solid var(--clr-border);
+  margin-top: 10px;
+  padding-top: 14px;
+}
+.review-totals .row.total .l { font-weight: 600; color: var(--clr-text); font-size: .84rem; }
+.review-totals .row.total .v { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; color: var(--clr-accent); font-weight: 300; }
+
+/* ---- Secure Badge ---- */
+.secure-row { display: flex; align-items: center; gap: 8px; justify-content: center; margin-top: 22px; font-size: .72rem; color: var(--clr-text-dim); }
+
+/* ---- Radio group ---- */
+.radio-group { display: flex; flex-direction: column; gap: 10px; }
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--clr-surface2);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: border-color var(--transition);
+}
+.radio-option:hover { border-color: var(--clr-accent-dim); }
+.radio-option.active { border-color: var(--clr-accent); background: rgba(201,169,110,.04); }
+.radio-option input[type="radio"] {
+  appearance: none;
+  width: 18px; height: 18px;
+  border: 2px solid var(--clr-border);
+  border-radius: 50%;
+  background: var(--clr-surface2);
+  transition: border-color var(--transition), background var(--transition);
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.radio-option.active input[type="radio"] {
+  border-color: var(--clr-accent);
+  background: var(--clr-accent);
+  box-shadow: inset 0 0 0 4px var(--clr-surface2);
+}
+.radio-option .ro-label { font-size: .83rem; color: var(--clr-text); }
+.radio-option .ro-sub { font-size: .73rem; color: var(--clr-text-dim); margin-top: 2px; }
+
+@media (max-width: 768px) {
+  .checkout-layout { grid-template-columns: 1fr; }
+  .order-review { position: static; order: -1; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="navbar__inner">
+    <a href="index.html" class="navbar__logo">LUX<span>ORA</span></a>
+    <ul class="navbar__links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="shop.html">Shop</a></li>
+      <li><a href="product.html">Product</a></li>
+      <li><a href="cart.html">Cart</a></li>
+      <li><a href="checkout.html" class="active">Checkout</a></li>
+      <li><a href="contact.html">Contact</a></li>
+      <li><a href="login.html">Account</a></li>
+    </ul>
+    <a href="cart.html" class="navbar__cart">🛒<span class="navbar__cart-count">3</span></a>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="breadcrumb">
+    <a href="index.html">Home</a><span class="sep">›</span>
+    <a href="cart.html">Cart</a><span class="sep">›</span>
+    <strong>Checkout</strong>
+  </div>
+  <div class="page-hero">
+    <h1>Checkout</h1>
+    <p>Complete your purchase securely.</p>
+  </div>
+
+  <div class="checkout-layout">
+    <!-- ============ FORM SIDE ============ -->
+    <div class="checkout-form">
+
+      <!-- Step Indicator -->
+      <div class="steps">
+        <div class="step active" id="stepDot1">
+          <div class="step__dot">1</div>
+          <div class="step__label">Contact</div>
+        </div>
+        <div class="step" id="stepDot2">
+          <div class="step__dot">2</div>
+          <div class="step__label">Shipping</div>
+        </div>
+        <div class="step" id="stepDot3">
+          <div class="step__dot">3</div>
+          <div class="step__label">Payment</div>
+        </div>
+        <div class="step" id="stepDot4">
+          <div class="step__dot">✓</div>
+          <div class="step__label">Confirm</div>
+        </div>
+      </div>
+
+      <!-- ========== STEP 1: CONTACT ========== -->
+      <div class="step-panel active" id="panel1">
+        <h3>Contact Information</h3>
+        <p>We'll use this to send your order confirmation.</p>
+
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" placeholder="you@example.com" id="chkEmail" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>First Name</label>
+            <input type="text" placeholder="James" id="chkFirst" />
+          </div>
+          <div class="form-group">
+            <label>Last Name</label>
+            <input type="text" placeholder="Carter" id="chkLast" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Phone Number</label>
+          <input type="tel" placeholder="+1 (555) 000-0000" id="chkPhone" />
+        </div>
+
+        <div class="step-nav">
+          <button class="btn btn--filled" onclick="goStep(2)">Continue →</button>
+        </div>
+      </div>
+
+      <!-- ========== STEP 2: SHIPPING ========== -->
+      <div class="step-panel" id="panel2">
+        <h3>Shipping Address</h3>
+        <p>Where should we deliver your order?</p>
+
+        <div class="form-group">
+          <label>Street Address</label>
+          <input type="text" placeholder="742 Evergreen Terrace" />
+        </div>
+        <div class="form-group">
+          <label>Apartment, Suite, etc. (optional)</label>
+          <input type="text" placeholder="Apt 4B" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>City</label>
+            <input type="text" placeholder="Springfield" />
+          </div>
+          <div class="form-group">
+            <label>Postal Code</label>
+            <input type="text" placeholder="62704" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>State / Province</label>
+            <select>
+              <option>Select state…</option>
+              <option>California</option>
+              <option>New York</option>
+              <option>Illinois</option>
+              <option>Texas</option>
+              <option>Florida</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Country</label>
+            <select>
+              <option>United States</option>
+              <option>Canada</option>
+              <option>United Kingdom</option>
+              <option>Australia</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Shipping Method -->
+        <div class="form-group" style="margin-top:8px;">
+          <label>Shipping Method</label>
+          <div class="radio-group">
+            <label class="radio-option active" onclick="selectRadio(this)">
+              <input type="radio" name="shipping" checked /> 
+              <div><div class="ro-label">Standard Shipping</div><div class="ro-sub">5–8 business days · Free</div></div>
+            </label>
+            <label class="radio-option" onclick="selectRadio(this)">
+              <input type="radio" name="shipping" />
+              <div><div class="ro-label">Express Shipping</div><div class="ro-sub">2–3 business days · $12.00</div></div>
+            </label>
+            <label class="radio-option" onclick="selectRadio(this)">
+              <input type="radio" name="shipping" />
+              <div><div class="ro-label">Next Day Delivery</div><div class="ro-sub">1 business day · $28.00</div></div>
+            </label>
+          </div>
+        </div>
+
+        <div class="step-nav">
+          <button class="btn" onclick="goStep(1)">← Back</button>
+          <button class="btn btn--filled" onclick="goStep(3)">Continue →</button>
+        </div>
+      </div>
+
+      <!-- ========== STEP 3: PAYMENT ========== -->
+      <div class="step-panel" id="panel3">
+        <h3>Payment Details</h3>
+        <p>All information is encrypted and secure.</p>
+
+        <div class="form-group">
+          <label>Name on Card</label>
+          <input type="text" placeholder="James Carter" />
+        </div>
+        <div class="form-group">
+          <label>Card Number</label>
+          <input type="text" placeholder="1234 5678 9012 3456" id="cardNum" maxlength="19" oninput="formatCard(this)" />
+        </div>
+        <div class="card-row">
+          <div class="form-group">
+            <label>Expiry Date</label>
+            <input type="text" placeholder="MM / YY" maxlength="5" oninput="formatExpiry(this)" />
+          </div>
+          <div class="form-group">
+            <label>CVV</label>
+            <input type="text" placeholder="• • •" maxlength="4" />
+          </div>
+        </div>
+
+        <!-- Payment method tabs -->
+        <div class="form-group" style="margin-top:4px;">
+          <label>Payment Method</label>
+          <div class="radio-group">
+            <label class="radio-option active" onclick="selectRadio(this)">
+              <input type="radio" name="paymethod" checked />
+              <div><div class="ro-label">💳 Credit / Debit Card</div><div class="ro-sub">Visa, Mastercard, Amex</div></div>
+            </label>
+            <label class="radio-option" onclick="selectRadio(this)">
+              <input type="radio" name="paymethod" />
+              <div><div class="ro-label">🅿️ PayPal</div><div class="ro-sub">You'll be redirected to PayPal</div></div>
+            </label>
+          </div>
+        </div>
+
+        <div class="step-nav">
+          <button class="btn" onclick="goStep(2)">← Back</button>
+          <button class="btn btn--filled" onclick="goStep(4)">Review Order →</button>
+        </div>
+      </div>
+
+      <!-- ========== STEP 4: CONFIRM ========== -->
+      <div class="step-panel" id="panel4">
+        <h3>Review & Confirm</h3>
+        <p>Everything look good? Place your order below.</p>
+
+        <div style="background:var(--clr-surface2);border:1px solid var(--clr-border);border-radius:var(--radius-lg);padding:22px;margin-bottom:20px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <span style="font-size:.72rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--clr-text);">Contact</span>
+            <button class="btn btn--sm" onclick="goStep(1)" style="padding:5px 12px;font-size:.68rem;">Edit</button>
+          </div>
+          <p style="font-size:.82rem;color:var(--clr-text-dim);">james.carter@email.com · +1 (555) 234-5678</p>
+        </div>
+        <div style="background:var(--clr-surface2);border:1px solid var(--clr-border);border-radius:var(--radius-lg);padding:22px;margin-bottom:20px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <span style="font-size:.72rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--clr-text);">Shipping</span>
+            <button class="btn btn--sm" onclick="goStep(2)" style="padding:5px 12px;font-size:.68rem;">Edit</button>
+          </div>
+          <p style="font-size:.82rem;color:var(--clr-text-dim);">742 Evergreen Terrace, Apt 4B<br/>Springfield, IL 62704, US<br/>Standard Shipping · 5–8 days</p>
+        </div>
+        <div style="background:var(--clr-surface2);border:1px solid var(--clr-border);border-radius:var(--radius-lg);padding:22px;margin-bottom:20px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <span style="font-size:.72rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--clr-text);">Payment</span>
+            <button class="btn btn--sm" onclick="goStep(3)" style="padding:5px 12px;font-size:.68rem;">Edit</button>
+          </div>
+          <p style="font-size:.82rem;color:var(--clr-text-dim);">Credit Card ending in <strong style="color:var(--clr-text);">3456</strong></p>
+        </div>
+
+        <!-- Terms checkbox -->
+        <label style="display:flex;gap:10px;align-items:flex-start;cursor:pointer;margin-top:8px;margin-bottom:4px;">
+          <input type="checkbox" id="termsChk" style="margin-top:2px;width:16px;height:16px;accent-color:var(--clr-accent);cursor:pointer;flex-shrink:0;" />
+          <span style="font-size:.78rem;color:var(--clr-text-dim);line-height:1.5;">I agree to the <a href="#" style="color:var(--clr-accent);">Terms of Service</a> and <a href="#" style="color:var(--clr-accent);">Privacy Policy</a>, and confirm I am at least 18 years old.</span>
+        </label>
+
+        <div class="step-nav">
+          <button class="btn" onclick="goStep(3)">← Back</button>
+          <button class="btn btn--filled" onclick="placeOrder()" style="flex:2;">Place Order — $868.32</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ============ ORDER REVIEW SIDEBAR ============ -->
+    <aside class="order-review">
+      <h4>Your Order</h4>
+
+      <div class="review-item">
+        <div class="review-item__img" style="background:linear-gradient(145deg,#1a1a1a,#222);">⌚</div>
+        <div class="review-item__info">
+          <div class="name">Chronos Minimal</div>
+          <div class="meta">Silver · 40mm · ×1</div>
+        </div>
+        <div class="review-item__price">$420</div>
+      </div>
+      <div class="review-item">
+        <div class="review-item__img" style="background:linear-gradient(145deg,#1c1810,#252015);">👜</div>
+        <div class="review-item__info">
+          <div class="name">Heritage Tote</div>
+          <div class="meta">Cognac · ×1</div>
+        </div>
+        <div class="review-item__price">$189</div>
+      </div>
+      <div class="review-item">
+        <div class="review-item__img" style="background:linear-gradient(145deg,#181820,#20202a);">🕶️</div>
+        <div class="review-item__info">
+          <div class="name">Noir Aviator</div>
+          <div class="meta">Matte Black · ×1</div>
+        </div>
+        <div class="review-item__price">$195</div>
+      </div>
+
+      <div class="review-totals">
+        <div class="row"><span class="l">Subtotal</span><span class="v">$804.00</span></div>
+        <div class="row"><span class="l">Shipping</span><span class="v" style="color:var(--clr-success);">Free</span></div>
+        <div class="row"><span class="l">Tax (8%)</span><span class="v">$64.32</span></div>
+        <div class="row total"><span class="l">Total</span><span class="v">$868.32</span></div>
+      </div>
+
+      <div class="secure-row">🔒 Secure · SSL Encrypted · PCI DSS Compliant</div>
+    </aside>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <div class="navbar__logo" style="font-size:1.4rem;">LUX<span style="color:var(--clr-accent)">ORA</span></div>
+        <p>Timeless luxury accessories designed for the modern individual.</p>
+      </div>
+      <div><h5>Shop</h5><ul><li><a href="shop.html">All Products</a></li><li><a href="#">Watches</a></li><li><a href="#">Leather Goods</a></li></ul></div>
+      <div><h5>Company</h5><ul><li><a href="#">About Us</a></li><li><a href="contact.html">Contact</a></li><li><a href="#">Careers</a></li></ul></div>
+      <div><h5>Support</h5><ul><li><a href="#">FAQ</a></li><li><a href="#">Shipping</a></li><li><a href="#">Returns</a></li></ul></div>
+    </div>
+    <div class="footer__bottom"><span>© 2025 Luxora.</span><span>Designed with intention.</span></div>
+  </div>
+</footer>
+
+<div class="toast" id="toast"></div>
+<script>
+let currentStep = 1;
+
+function goStep(n) {
+  // Hide all panels
+  document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel' + n).classList.add('active');
+  currentStep = n;
+
+  // Update step dots
+  for (let i = 1; i <= 4; i++) {
+    const dot = document.getElementById('stepDot' + i);
+    dot.classList.remove('active', 'done');
+    if (i < n) dot.classList.add('done');
+    if (i === n) dot.classList.add('active');
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function selectRadio(el) {
+  const group = el.closest('.radio-group');
+  group.querySelectorAll('.radio-option').forEach(o => o.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function formatCard(input) {
+  let v = input.value.replace(/\D/g, '').substring(0, 16);
+  input.value = v.replace(/(.{4})/g, '$1 ').trim();
+}
+
+function formatExpiry(input) {
+  let v = input.value.replace(/\D/g, '').substring(0, 4);
+  if (v.length >= 2) v = v.substring(0, 2) + ' / ' + v.substring(2);
+  input.value = v;
+}
+
+function placeOrder() {
+  if (!document.getElementById('termsChk').checked) {
+    showToast('Please accept the terms to continue.');
+    return;
+  }
+  showToast('🎉 Order placed successfully! Thank you.');
+  setTimeout(() => {
+    document.querySelector('.checkout-form').innerHTML = `
+      <div style="text-align:center;padding:80px 0;">
+        <div style="font-size:4rem;margin-bottom:20px;">✓</div>
+        <h2 style="color:var(--clr-accent);margin-bottom:12px;">Order Confirmed</h2>
+        <p style="max-width:380px;margin:0 auto;">Your order <strong style="color:var(--clr-text)">#LUX-20251 </strong> has been placed. A confirmation email is on its way.</p>
+        <a href="index.html" class="btn btn--filled" style="margin-top:28px;">Continue Shopping</a>
+      </div>`;
+  }, 1800);
+}
+
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);}
+</script>
+</body>
+</html>
